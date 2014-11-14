@@ -11,10 +11,14 @@ public class PicManager : MonoBehaviour {
     private float totalHeight;
     private float maxWidth;
     private int scale = 150;
+    private bool selected;
+    public bool Selected { get { return selected; } }
+    private Texture2D selectedPicture;
 	void Awake () {
         directory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + @"/SocialSchedulerPics";
         RefreshPicList();
         scroll = new Vector2();
+        selected = false;
 	}
 
     private void RefreshPicList()
@@ -34,7 +38,7 @@ public class PicManager : MonoBehaviour {
                 Debug.Log("The file " + file + " is the wrong format");
             }
         }
-        totalHeight = Mathf.Ceil(pictures.Count / 4) * 150.0f;
+        totalHeight = Mathf.Ceil(pictures.Count / 4.0f) * 150.0f;
         maxWidth = 150.0f * 4;
     }
     private void LoadPicture(string file)
@@ -58,14 +62,20 @@ public class PicManager : MonoBehaviour {
     void OnGUI()
     {
         scroll = GUI.BeginScrollView(new Rect(Screen.width * 0.5f, 0.0f, Screen.width * 0.5f, Screen.height), scroll, new Rect(Screen.width * 0.5f, Screen.height, maxWidth, totalHeight));
+        ScrollView();
+        GUI.EndScrollView();
+    }
+    private void ScrollView()
+    {
         float y = 0.0f;
         int count = 0;
-        foreach(Texture2D texture in pictures)
+        foreach (Texture2D texture in pictures)
         {
             Texture2D thumbnail = ScaleTexture(texture, 150, 150);
             if (GUI.Button(new Rect(Screen.width * 0.5f + ((count % 4) * 150.0f), Screen.height + y, thumbnail.width, thumbnail.height), thumbnail))
             {
-                Debug.Log(texture.width);
+                selectedPicture = texture;
+                selected = true;
             }
             count++;
             if ((count % 4) == 0)
@@ -73,9 +83,8 @@ public class PicManager : MonoBehaviour {
                 y += scale;
             }
         }
-        GUI.EndScrollView();
     }
-    private Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
+    public static Texture2D ScaleTexture(Texture2D source, int targetWidth, int targetHeight)
     {
         Texture2D result = new Texture2D(targetWidth, targetHeight, source.format, true);
         Color[] rpixels = result.GetPixels(0);
@@ -88,5 +97,16 @@ public class PicManager : MonoBehaviour {
         result.SetPixels(rpixels, 0);
         result.Apply();
         return result;
+    }
+    public Texture2D GetSelectedPicture()
+    {
+        if (selected)
+        {
+            return selectedPicture;
+        }
+        else
+        {
+            return null;
+        }
     }
 }
